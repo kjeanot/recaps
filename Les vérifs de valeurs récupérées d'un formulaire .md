@@ -58,15 +58,37 @@ On vérifie si le champ est vide ou si le filter_input renvoit false. Si une con
 
 ```
 
-Si le tableau est vide une fois les tests passés, on peut exécuter notre requête SQL.
+Si le tableau est vide une fois les tests passés, on peut exécuter notre requête SQL en :
+
+- Créant une nouvelle instance de notre model concerné
+- Renseignant les attributs de ce nouvel objet à l'aide des setters
+- Exécutant notre méthode insert, si elle ne renvoit pas d'erreur
 
 ```PHP
 // 3- On s'assure qu'il n'y a aucune erreur (grâce à des variables)
         // => Est-ce que le tableau errorList est vide ?
         if(empty($errorList)) {
             // 3a- On fait la requete SQL INSERT
+            // ici je suis sûr d'avoir protéger correctement ma BDD, et je peux maintenant faire la requete
+            $category = new Category();
+            $category->setName($name);
+            $category->setSubtitle($subtitle);
+            $category->setPicture($picture);
 
-            // 3b- On redirige l'utilisateur vers la liste des catégories
+            if($category->insert()) {
+                // 3b- On redirige l'utilisateur vers la liste des catégories
+                // Attention, de ne pas laisser trainer de var_dump dans le code !!!
+
+                // Pourquoi je n'utilise pas la méthode show() => 
+                // PARCE QUE SI JE FAIS F5, je vais renvoyer à l'infini les données du formulaire !
+                // DONC => créer autant de lignes que de F5 que je vais faire sur la page
+                // DONC CREATION DE DOUBLONS EN BDD
+
+                header('Location: /categories/list');
+                exit;   // par sécurité, pour pas que la suite se déroule
+            } else {
+                $errorList[] = "La sauvegarde a échouée";
+            }
         }
 
 ```
