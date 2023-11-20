@@ -1,6 +1,6 @@
 # Les tests côté back-end à la soumission d'un formulaire
 
-## Tests de valeurs soummises  
+## Tests de valeurs soumises  
 
 1- On récupère les données du formulaire et on applique un filter_input pour valider le type du champ à récupérer.
 
