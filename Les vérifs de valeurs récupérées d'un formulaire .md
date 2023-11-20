@@ -145,34 +145,44 @@ On peut aussi afficher la valeur des champs n'ayant pas passé nos tests en back
 
 ## Envoi en base de données
 
-Détail de la fonction insert() :
+Détail d'une fonction insert() :
 
 ```PHP
-    public function insert()
+   public function insert()
     {
-        // Récupération de l'objet PDO représentant la connexion à la DB
         $pdo = Database::getPDO();
-
-        // Ecriture de la requête INSERT INTO
         $sql = "
-            INSERT INTO `brand` (name)
-            VALUES ('{$this->name}')
+            INSERT INTO `category` (name, subtitle, picture)
+            VALUES (':name', ':subtitle', ':picture')
         ";
+        /*
+        1ère façon
+        $sth = $pdo->prepare($sql);
+
+        $data = [
+            'name' => $this->name,
+            'subtitle' => $this->subtitle,
+            'picture' => $this->picture
+        ];
 
         // Execution de la requête d'insertion (exec, pas query)
-        $insertedRows = $pdo->exec($sql);
+        $insertedRows = $sth->execute($data);*/
 
-        // Si au moins une ligne ajoutée
+        // 2ème façon
+        // en utilisant la fonction bindValue
+        $pdoStatement = $pdo->prepare($sql);
+        // on binde chaque valeur => on remplace les valeurs, et on rajoute une sécurité supplémentaire pour LA BDD
+        $pdoStatement->bindValue(':name', $this->name, PDO::PARAM_STR);
+        $pdoStatement->bindValue(':subtitle', $this->subtitle, PDO::PARAM_STR);
+        $pdoStatement->bindValue(':picture', $this->picture, PDO::PARAM_STR);
+        $insertedRows = $pdoStatement->execute();
+
+
         if ($insertedRows > 0) {
-            // Alors on récupère l'id auto-incrémenté généré par MySQL
             $this->id = $pdo->lastInsertId();
-
-            // On retourne VRAI car l'ajout a parfaitement fonctionné
             return true;
-            // => l'interpréteur PHP sort de cette fonction car on a retourné une donnée
         }
 
-        // Si on arrive ici, c'est que quelque chose n'a pas bien fonctionné => FAUX
         return false;
     }
 ```
